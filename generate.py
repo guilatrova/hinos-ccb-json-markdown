@@ -7,6 +7,7 @@ from rich.progress import track
 
 OUTPUT_DIR = "./output"
 OUTPUT_JSON_DIR = "./output/json"
+OUTPUT_MD_DIR = "./output/markdown"
 INPUT_FILE = "./Hinario CCB 5 Cantado.txt"
 
 console = Console()
@@ -73,8 +74,11 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
 
 
 def main():
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists(OUTPUT_JSON_DIR):
+        os.makedirs(OUTPUT_JSON_DIR)
+
+    if not os.path.exists(OUTPUT_MD_DIR):
+        os.makedirs(OUTPUT_MD_DIR)
 
     if not os.path.exists(INPUT_FILE):
         console.print(f"[bold red]Arquivo {INPUT_FILE} não encontrado.[/bold red]")
@@ -96,19 +100,35 @@ def main():
         hymn_data = parse_hymn_block(raw_block)
 
         if hymn_data:
-            file_name = f"{hymn_data['id']}.json"
-            file_path = os.path.join(OUTPUT_DIR, file_name)
+            # Salva JSON
+            json_file_name = f"{hymn_data['id']}.json"
+            json_file_path = os.path.join(OUTPUT_JSON_DIR, json_file_name)
 
             # Salva com quebras de linha reais
             json_str = json.dumps(hymn_data, indent=2, ensure_ascii=False)
             # Substitui \n escapado por quebra de linha real
             json_str = json_str.replace("\\n", "\n")
 
-            with open(file_path, "w", encoding="utf-8") as f:
+            with open(json_file_path, "w", encoding="utf-8") as f:
                 f.write(json_str)
 
+            # Salva Markdown
+            md_file_name = f"{hymn_data['id']}.md"
+            md_file_path = os.path.join(OUTPUT_MD_DIR, md_file_name)
+
+            md_content = f"""---
+id: {hymn_data['id']}
+titulo: {hymn_data['titulo']}
+---
+
+{hymn_data['lyrics']}
+"""
+
+            with open(md_file_path, "w", encoding="utf-8") as f:
+                f.write(md_content)
+
     console.print(
-        f"[bold green]Sucesso! {len(raw_hymns)} hinos exportados para {OUTPUT_DIR}[/bold green]"
+        f"[bold green]Sucesso! {len(raw_hymns)} hinos exportados para JSON e Markdown[/bold green]"
     )
 
 
