@@ -100,19 +100,14 @@ def main():
         hymn_data = parse_hymn_block(raw_block)
 
         if hymn_data:
-            # Salva JSON
+            # Salva JSON (mantém \n escapado)
             json_file_name = f"{hymn_data['no']}.json"
             json_file_path = os.path.join(OUTPUT_JSON_DIR, json_file_name)
 
-            # Salva com quebras de linha reais
-            json_str = json.dumps(hymn_data, indent=2, ensure_ascii=False)
-            # Substitui \n escapado por quebra de linha real
-            json_str = json_str.replace("\\n", "\n")
-
             with open(json_file_path, "w", encoding="utf-8") as f:
-                f.write(json_str)
+                json.dump(hymn_data, f, indent=2, ensure_ascii=False)
 
-            # Salva Markdown
+            # Salva Markdown (com quebras de linha reais)
             md_file_name = f"{hymn_data['no']}.md"
             md_file_path = os.path.join(OUTPUT_MD_DIR, md_file_name)
 
