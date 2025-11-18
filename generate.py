@@ -16,11 +16,11 @@ console = Console()
 def parse_hymn_block(block: str) -> Optional[Dict]:
     """Processa um bloco de texto cru contendo um único hino."""
     raw_lines = block.splitlines()
-    
+
     # Encontra a linha do cabeçalho
     header_line_idx = -1
     header_pattern = r"Hino\s+(\d+)\s+[–-]\s+(.+)"
-    
+
     for i, line in enumerate(raw_lines):
         match = re.search(header_pattern, line.strip(), re.IGNORECASE)
         if match:
@@ -28,24 +28,30 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
             hino_id = int(match.group(1))
             title = match.group(2).strip()
             break
-    
+
     if header_line_idx == -1:
         return None
-    
+
     # Verificar se o título continua na próxima linha
     # Só é continuação se: próxima linha existe, não está vazia, e não é verso/coro
     body_start_idx = header_line_idx + 1
-    
+
     if body_start_idx < len(raw_lines):
         next_line = raw_lines[body_start_idx].strip()
-        
+
         # Verifica se há uma linha de continuação do título
-        # Critérios: linha não vazia, não começa com número, não é CORO, 
+        # Critérios: linha não vazia, não começa com número, não é CORO,
         # e a linha seguinte está vazia (indicando que é só o título)
-        if next_line and not re.match(r"^\d+\s*\.?", next_line) and \
-           not re.match(r"^(?:CORO|Coro)", next_line, re.IGNORECASE):
+        if (
+            next_line
+            and not re.match(r"^\d+\s*\.?", next_line)
+            and not re.match(r"^(?:CORO|Coro)", next_line, re.IGNORECASE)
+        ):
             # Verifica se após essa linha há linha vazia (confirma que é título)
-            if body_start_idx + 1 < len(raw_lines) and not raw_lines[body_start_idx + 1].strip():
+            if (
+                body_start_idx + 1 < len(raw_lines)
+                and not raw_lines[body_start_idx + 1].strip()
+            ):
                 title += " " + next_line
                 body_start_idx += 1
 
