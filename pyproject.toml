@@ -1,0 +1,17 @@
+[project]
+name = "ccb-hinos-json"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "guilatrova",email = "hello@guilatrova.dev"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "rich (>=14.2.0,<15.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
