@@ -15,23 +15,42 @@ console = Console()
 
 def parse_hymn_block(block: str) -> Optional[Dict]:
     """Processa um bloco de texto cru contendo um único hino."""
-    lines = [l.strip() for l in block.splitlines() if l.strip()]
-
-    if not lines:
-        return None
-
-    # 1. Extrair Cabeçalho (Hino X – Título)
+    raw_lines = block.splitlines()
+    
+    # Encontra a linha do cabeçalho
+    header_line_idx = -1
     header_pattern = r"Hino\s+(\d+)\s+[–-]\s+(.+)"
-    header_match = re.search(header_pattern, lines[0], re.IGNORECASE)
-
-    if not header_match:
+    
+    for i, line in enumerate(raw_lines):
+        match = re.search(header_pattern, line.strip(), re.IGNORECASE)
+        if match:
+            header_line_idx = i
+            hino_id = int(match.group(1))
+            title = match.group(2).strip()
+            break
+    
+    if header_line_idx == -1:
         return None
-
-    hino_id = int(header_match.group(1))
-    title = header_match.group(2).strip()
+    
+    # Verificar se o título continua na próxima linha
+    # Só é continuação se: próxima linha existe, não está vazia, e não é verso/coro
+    body_start_idx = header_line_idx + 1
+    
+    if body_start_idx < len(raw_lines):
+        next_line = raw_lines[body_start_idx].strip()
+        
+        # Verifica se há uma linha de continuação do título
+        # Critérios: linha não vazia, não começa com número, não é CORO, 
+        # e a linha seguinte está vazia (indicando que é só o título)
+        if next_line and not re.match(r"^\d+\s*\.?", next_line) and \
+           not re.match(r"^(?:CORO|Coro)", next_line, re.IGNORECASE):
+            # Verifica se após essa linha há linha vazia (confirma que é título)
+            if body_start_idx + 1 < len(raw_lines) and not raw_lines[body_start_idx + 1].strip():
+                title += " " + next_line
+                body_start_idx += 1
 
     # 2. Processar Letra (trabalha com linhas originais, não stripped)
-    raw_body_lines = block.splitlines()[1:]  # Pula o cabeçalho
+    raw_body_lines = raw_lines[body_start_idx:]  # Começa do corpo do hino
 
     lyrics_parts = []
     current_label = ""
