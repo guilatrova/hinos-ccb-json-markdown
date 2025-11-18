@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.progress import track
 
 OUTPUT_DIR = "./output"
+OUTPUT_JSON_DIR = "./output/json"
 INPUT_FILE = "./Hinario CCB 5 Cantado.txt"
 
 console = Console()
@@ -98,8 +99,13 @@ def main():
             file_name = f"{hymn_data['id']}.json"
             file_path = os.path.join(OUTPUT_DIR, file_name)
 
+            # Salva com quebras de linha reais
+            json_str = json.dumps(hymn_data, indent=2, ensure_ascii=False)
+            # Substitui \n escapado por quebra de linha real
+            json_str = json_str.replace('\\n', '\n')
+            
             with open(file_path, "w", encoding="utf-8") as f:
-                json.dump(hymn_data, f, indent=2, ensure_ascii=False)
+                f.write(json_str)
 
     console.print(
         f"[bold green]Sucesso! {len(raw_hymns)} hinos exportados para {OUTPUT_DIR}[/bold green]"
