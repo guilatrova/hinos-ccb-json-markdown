@@ -30,10 +30,14 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
     hino_id = int(header_match.group(1))
     title = header_match.group(2).strip()
 
-    # 2. Processar Letra
+    # 2. Processar Letra (trabalha com linhas originais, não stripped)
+    raw_body_lines = block.splitlines()[1:]  # Pula o cabeçalho
+
     lyrics_parts = []
     current_label = ""
     current_buffer = []
+    next_verse_number = 1
+    expecting_new_block = False
 
     def flush_buffer():
         if current_label and current_buffer:
@@ -41,20 +45,33 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
             lyrics_parts.append(f"[{current_label}]\n{text}")
         current_buffer.clear()
 
-    # Pula a linha do título e itera sobre o corpo
-    for line in lines[1:]:
+    for line in raw_body_lines:
+        stripped = line.strip()
+
+        # Ignora linhas completamente vazias
+        if not stripped:
+            # Linha vazia indica fim do bloco atual
+            if current_buffer:
+                expecting_new_block = True
+            continue
+
         # Detecta Verso (ex: "1. Texto" ou "1 Texto")
-        verse_match = re.match(r"^(\d+)\s*\.?(.*)", line)
+        verse_match = re.match(r"^(\d+)\s*\.?(.*)", stripped)
 
         # Detecta Coro
-        chorus_match = re.match(r"^(?:CORO|Coro)(?:\s*:)?\s*(.*)", line, re.IGNORECASE)
+        chorus_match = re.match(
+            r"^(?:CORO|Coro)(?:\s*:)?\s*(.*)", stripped, re.IGNORECASE
+        )
 
         if verse_match:
             flush_buffer()
-            current_label = f"Verse {verse_match.group(1)}"
+            verse_num = int(verse_match.group(1))
+            next_verse_number = verse_num + 1
+            current_label = f"Verse {verse_num}"
             content = verse_match.group(2).strip()
             if content:
                 current_buffer.append(content)
+            expecting_new_block = False
 
         elif chorus_match:
             flush_buffer()
@@ -62,11 +79,26 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
             content = chorus_match.group(1).strip()
             if content:
                 current_buffer.append(content)
+            expecting_new_block = False
 
         else:
-            # Linha de continuação da estrofe anterior
-            if current_label:
-                current_buffer.append(line)
+            # Linha de texto normal
+            if expecting_new_block:
+                # Novo bloco após linha vazia
+                flush_buffer()
+                current_label = f"Verse {next_verse_number}"
+                next_verse_number += 1
+                current_buffer.append(stripped)
+                expecting_new_block = False
+            elif current_label:
+                # Continuação do bloco atual
+                current_buffer.append(stripped)
+            else:
+                # Primeiro bloco sem numeração
+                current_label = "Verse 1"
+                next_verse_number = 2
+                current_buffer.append(stripped)
+                expecting_new_block = False
 
     flush_buffer()  # Salva o último bloco
 
