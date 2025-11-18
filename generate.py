@@ -28,7 +28,7 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
         return None
 
     hino_id = int(header_match.group(1))
-    titulo = header_match.group(2).strip()
+    title = header_match.group(2).strip()
 
     # 2. Processar Letra
     lyrics_parts = []
@@ -70,7 +70,7 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
 
     flush_buffer()  # Salva o último bloco
 
-    return {"id": hino_id, "titulo": titulo, "lyrics": "\n\n".join(lyrics_parts)}
+    return {"no": hino_id, "title": title, "lyrics": "\n\n".join(lyrics_parts)}
 
 
 def main():
@@ -101,7 +101,7 @@ def main():
 
         if hymn_data:
             # Salva JSON
-            json_file_name = f"{hymn_data['id']}.json"
+            json_file_name = f"{hymn_data['no']}.json"
             json_file_path = os.path.join(OUTPUT_JSON_DIR, json_file_name)
 
             # Salva com quebras de linha reais
@@ -113,12 +113,12 @@ def main():
                 f.write(json_str)
 
             # Salva Markdown
-            md_file_name = f"{hymn_data['id']}.md"
+            md_file_name = f"{hymn_data['no']}.md"
             md_file_path = os.path.join(OUTPUT_MD_DIR, md_file_name)
 
             md_content = f"""---
-id: {hymn_data['id']}
-titulo: {hymn_data['titulo']}
+no: {hymn_data['no']}
+title: {hymn_data['title']}
 ---
 
 {hymn_data['lyrics']}
