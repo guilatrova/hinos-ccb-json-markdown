@@ -102,8 +102,8 @@ def main():
             # Salva com quebras de linha reais
             json_str = json.dumps(hymn_data, indent=2, ensure_ascii=False)
             # Substitui \n escapado por quebra de linha real
-            json_str = json_str.replace('\\n', '\n')
-            
+            json_str = json_str.replace("\\n", "\n")
+
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(json_str)
 
