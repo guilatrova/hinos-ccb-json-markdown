@@ -127,6 +127,8 @@ def parse_hymn_block(block: str) -> Optional[Dict]:
 
     flush_buffer()  # Salva o último bloco
 
+    title = re.sub(r"\s*\(.*?\)\s*", "", title).strip()
+    title = title.rstrip(" –")
     return {"no": hino_id, "title": title, "lyrics": "\n\n".join(lyrics_parts)}
 
 
