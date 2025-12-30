@@ -6,8 +6,8 @@ from rich.console import Console
 from rich.progress import track
 
 OUTPUT_DIR = "./output"
-OUTPUT_JSON_DIR = "./output/json"
-OUTPUT_MD_DIR = "./output/markdown"
+OUTPUT_JSON_DIR = "./output/ccb_json"
+OUTPUT_MD_DIR = "./output/ccb_markdown"
 INPUT_FILE = "./Hinario CCB 5 Cantado.txt"
 
 console = Console()
